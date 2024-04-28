@@ -7,7 +7,7 @@ import { useEffect, useState } from "react"
 import "./google-sidebar-base.css"
 
 export const config: PlasmoCSConfig = {
-  matches: ["https://www.google.com/*"]
+  matches: ["https://www.google.com/maps/*"]
 }
 
 // Inject into the ShadowDOM
@@ -32,7 +32,7 @@ const GoogleSidebar = () => {
         {isOpen ? "🟡 Close" : "🟣 Open"}
       </button>
       <img src={iconBase64} alt="Extension Icon" width={128} height={128} />
-      <p>The Easiest Way to Build, Test, and Ship browser extensions</p>
+      <p>Start Finding Leads</p>
     </div>
   )
 }
