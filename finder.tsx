@@ -32,11 +32,16 @@ const fields = [
   "Google Knowledge URL",
   "Kgmid"
 ];
-function IndexPopup() {
+function Finder() {
   const [arr, setArr] = useState([...fields]);
   const toggle = (field) => setArr(arr.includes(field) ? arr.filter(f => f !== field) : [...arr, field]);
   const openGMap = () => {
-    chrome.tabs.create({ url: 'https://www.google.com/maps' }, function(tab) {
+    chrome.tabs.create({url: 'https://www.google.com/maps'});
+    chrome.windows.create({
+      url: chrome.runtime.getURL("finder.html"),
+      type: "popup",
+      width: 300,
+      height: 400
     });
   }
   return (
@@ -78,4 +83,4 @@ function IndexPopup() {
   )
 }
 
-export default IndexPopup
+export default Finder
