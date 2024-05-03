@@ -1,4 +1,24 @@
 import type { PlasmoCSConfig } from "plasmo";
+import { feature } from "./const/feature";
+import { phone } from "./const/phone";
+import { collectData } from "./fetchDataFromPath";
+
+function parseData (rawData: {d: string}) {
+    let stringify = `${rawData}`
+    /** remove extra code */
+    const new_stringify = stringify.replace(`/*""*/`, '').replace(`/*\"\"*/`, '').replace(/\/\*\.*\*\//, '')
+    const newData = JSON.parse(new_stringify)
+ 
+    /** remove extra code */
+    const searchBody = newData.d?.replace(`)]}'\n`, '');
+
+    const FieldsMap = {
+        'feature': feature
+    }
+    const fields = Object.keys(FieldsMap)
+    return collectData(JSON.parse(searchBody), feature, phone);
+}
+
 
 export const config: PlasmoCSConfig = {
   matches: ["https://www.google.com/maps/*"],
@@ -56,7 +76,7 @@ export const config: PlasmoCSConfig = {
                   try {
 
                       // here you get RESPONSE TEXT (BODY), in JSON format, so you can use JSON.parse
-                      var arr = this.responseText;
+                      var data = this.responseText;
 
                       // printing url, request headers, response headers, response body, to console
 
@@ -64,8 +84,10 @@ export const config: PlasmoCSConfig = {
                       console.log(JSON.parse(this._requestHeaders));
                       console.log(responseHeaders);
                       console.log(JSON.parse(arr));        */                 
-                      console.log(this._url)
-                      console.log(arr);
+                      if (this._url.indexOf('search') > -1) {
+                          console.log('this._url', this._url, )
+                          console.log(/* 'response', data,  */'this._url parsed:', parseData((data)));
+                        }
                   } catch(err) {
                       console.log("Error in responseType try catch");
                       console.log(err);

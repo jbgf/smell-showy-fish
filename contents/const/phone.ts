@@ -1,0 +1,1 @@
+export const phone = [0, 1, null, 14, 18]
