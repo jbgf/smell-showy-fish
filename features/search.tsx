@@ -11,6 +11,9 @@ export const Search = () => {
       alert(`Please enter an address or name of a place.`)
       return;
     }
+    const searchButton = document.querySelector<HTMLButtonElement>("#searchbox-searchbutton")
+    console.log(searchButton, 'searchButton')
+    searchButton?.click()
   }
   return (
     <div className="plasmo-text-center w-full">
