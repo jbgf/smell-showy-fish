@@ -1,0 +1,1 @@
+export const longitude = [0, 1, null, 14, 9, 3]

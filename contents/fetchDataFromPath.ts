@@ -6,13 +6,18 @@ export function fetchDataFromPath(data: MultiDimensionalArray, path: PathElement
       const pathElement = currentPath?.[currentIndex];
       // console.log(`currentData`,currentData, `currentIndex`, currentIndex, `currentPath`, currentPath, 'pathElement', pathElement)
       if (currentIndex === currentPath?.length - 1) {
-        return currentData?.[pathElement];
+        let value = currentData?.[pathElement];
+        if (Array.isArray(value)) {
+          return value.join(',')
+        }
+        return value;
       }
       // 当标记为null 而不是number时，遍历这一层级
         if (pathElement === null) {
             if (!Array.isArray(currentData)) {
                 throw new Error("Expected an array to iterate over, but got a non-array.");
             }
+            
             return currentData.flatMap((item: any) => traverse(item, currentIndex + 1, currentPath));
         } else {
             if (pathElement < 0 || pathElement >= currentData?.length) {
@@ -24,13 +29,13 @@ export function fetchDataFromPath(data: MultiDimensionalArray, path: PathElement
     }
     return traverse(data, 0, path);
 }
-export function collectData(data: MultiDimensionalArray, path1: PathElement[], path2: PathElement[]): any[] {
-  const data1 = fetchDataFromPath(data, path1);
-  // const data2 = fetchDataFromPath(data, path2);
-  return data1.map((item, index) => ({
-    Feature: item,
-      // phone: data2[index] || null // 使用 data2 的相应项或者 null 如果索引不存在
-  }));
+export function collectData(data: MultiDimensionalArray, paths: {label: string, path: PathElement[]}[]): any[] {
+  const obj = {}
+  paths?.forEach(item => {
+    obj[item.label] = fetchDataFromPath(data, item.path)
+  })
+  // console.log(obj)
+  return obj;
 }
 /* // 使用示例
 const exampleArray = [

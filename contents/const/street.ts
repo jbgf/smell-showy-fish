@@ -1,0 +1,1 @@
+export const street = [0, 1, null, 14, 2, 0]

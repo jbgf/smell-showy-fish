@@ -1,0 +1,1 @@
+export const averageRating = [0, 1, null, 14, 4, 7]

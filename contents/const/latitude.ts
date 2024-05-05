@@ -1,0 +1,1 @@
+export const latitude = [0, 1, null, 14, 9, 2]

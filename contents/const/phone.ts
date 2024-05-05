@@ -1,1 +1,1 @@
-export const phone = [0, 1, null, 14, 18]
+export const phone = [0, 1, null, 14, 178, 0, 0]

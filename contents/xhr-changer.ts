@@ -2,6 +2,16 @@ import type { PlasmoCSConfig } from "plasmo";
 import { feature } from "./const/feature";
 import { phone } from "./const/phone";
 import { collectData } from "./fetchDataFromPath";
+import { name } from "./const/name";
+import { FullAddress } from "./const/full-address";
+import { street } from "./const/street";
+import { municipality } from "./const/municipality";
+import { categories } from "./const/categories";
+import { reviewCount } from "./const/review-count";
+import { averageRating } from "./const/average-rating";
+import { reviewURL } from "./const/review-url";
+import { latitude } from "./const/latitude";
+import { longitude } from "./const/longitude";
 
 function parseData (rawData: {d: string}) {
     let stringify = `${rawData}`
@@ -16,7 +26,58 @@ function parseData (rawData: {d: string}) {
         'feature': feature
     }
     const fields = Object.keys(FieldsMap)
-    return collectData(JSON.parse(searchBody), feature, phone);
+    console.log(`searchBody`, searchBody, )
+    return collectData(JSON.parse(searchBody), [
+        {
+            label: `Name`,
+            path: name,
+        },
+        {
+            label: `Feature`,
+            path: feature,
+        
+        },
+        {
+            label: `Full Address`,
+            path: FullAddress
+        },
+        {
+            label: `Street`,
+            path: street
+        },
+        {
+            label: `Municipality`,
+            path: municipality
+        },
+        {
+            label: `Categories`,
+            path: categories
+        },
+        {
+            label: `Phone`,
+            path: phone
+        },
+        {
+            label: `Review Count`,
+            path: reviewCount
+        },
+        {
+            label: `Average Rating`,
+            path: averageRating
+        },
+        {
+            label: `Review URL`,
+            path: reviewURL
+        },
+        {
+            label: `Latitude`,
+            path: latitude
+        },
+        {
+            label: `Longitude`,
+            path: longitude
+        }
+    ]);
 }
 
 
