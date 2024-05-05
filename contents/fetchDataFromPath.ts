@@ -31,11 +31,23 @@ export function fetchDataFromPath(data: MultiDimensionalArray, path: PathElement
 }
 export function collectData(data: MultiDimensionalArray, paths: {label: string, path: PathElement[], formatArray?}[]): any[] {
   const obj = {}
+  const keys = paths.map(item => item.label)
   paths?.forEach(item => {
     obj[item.label] = fetchDataFromPath(data, item.path, item.formatArray)
   })
+  const firstKey = Object.keys(obj)[0];
+  const firstRow = obj[firstKey];
+  const arr = []
+  firstRow?.forEach((item, index) => {
+    if (item === null) return;
+    const row = keys?.reduce((record, key) => {
+      record[key] = obj[key][index];
+      return record;
+    }, {})
+    arr.push(row);
+  })
   // console.log(obj)
-  return obj;
+  return arr;
 }
 /* // 使用示例
 const exampleArray = [
