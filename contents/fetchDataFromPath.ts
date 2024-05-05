@@ -1,14 +1,14 @@
 type PathElement = number | null;
 type MultiDimensionalArray = any[];
 
-export function fetchDataFromPath(data: MultiDimensionalArray, path: PathElement[]): any[] {
-    function traverse(currentData: any, currentIndex: number, currentPath: PathElement[]): any[] {
+export function fetchDataFromPath(data: MultiDimensionalArray, path: PathElement[], formatArray?: (arr: any[]) => any[]): any[] {
+    function traverse(currentData: any, currentIndex: number, currentPath: PathElement[], formatArray): any[] {
       const pathElement = currentPath?.[currentIndex];
       // console.log(`currentData`,currentData, `currentIndex`, currentIndex, `currentPath`, currentPath, 'pathElement', pathElement)
       if (currentIndex === currentPath?.length - 1) {
         let value = currentData?.[pathElement];
         if (Array.isArray(value)) {
-          return value.join(',')
+          return (formatArray ? formatArray(value) : value?.join(','))
         }
         return value;
       }
@@ -17,22 +17,22 @@ export function fetchDataFromPath(data: MultiDimensionalArray, path: PathElement
             if (!Array.isArray(currentData)) {
                 throw new Error("Expected an array to iterate over, but got a non-array.");
             }
-            
-            return currentData.flatMap((item: any) => traverse(item, currentIndex + 1, currentPath));
+
+            return currentData.flatMap((item: any) => traverse(item, currentIndex + 1, currentPath, formatArray));
         } else {
             if (pathElement < 0 || pathElement >= currentData?.length) {
                 return null;
             }
             // console.log(`params`, typeof currentData?.[pathElement])
-            return traverse(currentData?.[pathElement], currentIndex + 1, currentPath);
+            return traverse(currentData?.[pathElement], currentIndex + 1, currentPath, formatArray);
         }
     }
-    return traverse(data, 0, path);
+    return traverse(data, 0, path, formatArray);
 }
-export function collectData(data: MultiDimensionalArray, paths: {label: string, path: PathElement[]}[]): any[] {
+export function collectData(data: MultiDimensionalArray, paths: {label: string, path: PathElement[], formatArray?}[]): any[] {
   const obj = {}
   paths?.forEach(item => {
-    obj[item.label] = fetchDataFromPath(data, item.path)
+    obj[item.label] = fetchDataFromPath(data, item.path, item.formatArray)
   })
   // console.log(obj)
   return obj;

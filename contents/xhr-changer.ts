@@ -12,6 +12,9 @@ import { averageRating } from "./const/average-rating";
 import { reviewURL } from "./const/review-url";
 import { latitude } from "./const/latitude";
 import { longitude } from "./const/longitude";
+import { website } from "./const/website";
+import { featuredImage } from "./const/featured-image";
+import { openingHours } from "./const/opening-hours";
 
 function parseData (rawData: {d: string}) {
     let stringify = `${rawData}`
@@ -76,7 +79,20 @@ function parseData (rawData: {d: string}) {
         {
             label: `Longitude`,
             path: longitude
-        }
+        },
+        {
+            label: `Website`,
+            path: website
+        },
+        {
+            label: `Featured Image`,
+            path: featuredImage,
+        },
+        {
+            label: `Opening Hours`,
+            path: openingHours,
+            formatArray: (arr) => arr?.map((item) => `${item?.[0]}: ${item?.[1]?.toString()}`)?.join(',')
+        },
     ]);
 }
 

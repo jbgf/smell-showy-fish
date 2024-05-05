@@ -1,0 +1,1 @@
+export const openingHours = [0, 1, null, 14, 34, 1]
