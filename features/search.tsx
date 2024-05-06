@@ -1,6 +1,8 @@
 import { SearchOutlined } from "@ant-design/icons"
+import { sendToBackgroundViaRelay } from "@plasmohq/messaging"
 import { Button } from "antd"
 import { useReducer } from "react"
+import { SearchTypes } from "~const/enum"
 
 export const Search = () => {
   const handleSearch = () => {
@@ -14,6 +16,13 @@ export const Search = () => {
     const searchButton = document.querySelector<HTMLButtonElement>("#searchbox-searchbutton")
     console.log(searchButton, 'searchButton')
     searchButton?.click()
+
+    sendToBackgroundViaRelay({
+      name: "search",
+      body: {
+        type: SearchTypes.StartSearch
+      },
+  }).then(console.log)
   }
   return (
     <div className="plasmo-text-center w-full">

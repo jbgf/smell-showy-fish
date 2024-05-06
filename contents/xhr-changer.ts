@@ -16,6 +16,7 @@ import { website } from "./const/website";
 import { featuredImage } from "./const/featured-image";
 import { openingHours } from "./const/opening-hours";
 import { sendToBackground, sendToBackgroundViaRelay } from "@plasmohq/messaging"
+import { SearchTypes } from "~const/enum";
 /**
  * 解析谷歌搜索接口返回数据
  */
@@ -176,7 +177,8 @@ export const config: PlasmoCSConfig = {
                         }).then(console.log) */
                         sendToBackgroundViaRelay({
                             name: "search",
-                            body: parsedData,
+                            body: {type: SearchTypes.OnRes, data: parsedData}
+                            ,
                         }).then(console.log)
                     }
                   } catch(err) {
