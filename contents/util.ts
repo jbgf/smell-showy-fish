@@ -1,3 +1,6 @@
+/** 解析搜索数据
+ *  @return field path
+ */
 function findStringInArray(array, target, path = []) {
   const lowerTarget = target.toLowerCase(); // Convert target string to lowercase
 

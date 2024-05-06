@@ -15,7 +15,10 @@ import { longitude } from "./const/longitude";
 import { website } from "./const/website";
 import { featuredImage } from "./const/featured-image";
 import { openingHours } from "./const/opening-hours";
-
+import { sendToBackground, sendToBackgroundViaRelay } from "@plasmohq/messaging"
+/**
+ * 解析谷歌搜索接口返回数据
+ */
 function parseData (rawData: {d: string}) {
     let stringify = `${rawData}`
     /** remove extra code */
@@ -24,12 +27,8 @@ function parseData (rawData: {d: string}) {
  
     /** remove extra code */
     const searchBody = newData.d?.replace(`)]}'\n`, '');
-
-    const FieldsMap = {
-        'feature': feature
-    }
-    const fields = Object.keys(FieldsMap)
-    console.log(`searchBody`, searchBody, )
+    
+    // console.log(`searchBody`, searchBody, )
     return collectData(JSON.parse(searchBody), [
         {
             label: `Name`,
@@ -99,7 +98,8 @@ function parseData (rawData: {d: string}) {
 
 export const config: PlasmoCSConfig = {
   matches: ["https://www.google.com/maps/*"],
-  world: "MAIN"
+  world: "MAIN",
+  run_at: "document_start",
 };
 (function(xhr) {
 
@@ -162,9 +162,23 @@ export const config: PlasmoCSConfig = {
                       console.log(responseHeaders);
                       console.log(JSON.parse(arr));        */                 
                       if (this._url.indexOf('search') > -1) {
-                          console.log('this._url', this._url, )
-                          console.log(/* 'response', data,  */'this._url parsed:', parseData((data)));
-                        }
+
+                        
+
+                        //   console.log('this._url', this._url, )
+                        //   console.log(/* 'response', data,  */'this._url parsed:', parseData((data)));
+                        const parsedData = parseData(data)
+
+                        /* sendToBackground({
+                            name: "search",
+                            body: {id: 1},
+                            extensionId: 'dgcjpmoibjkdancepkbgkmehgoohnmkc'
+                        }).then(console.log) */
+                        sendToBackgroundViaRelay({
+                            name: "search",
+                            body: parsedData,
+                        }).then(console.log)
+                    }
                   } catch(err) {
                       console.log("Error in responseType try catch");
                       console.log(err);
@@ -178,3 +192,4 @@ export const config: PlasmoCSConfig = {
   };
 
 })(XMLHttpRequest);
+
