@@ -5,6 +5,40 @@ import { useReducer } from "react"
 import { SearchTypes } from "~const/enum"
 
 export const Search = () => {
+  const scrollToBottom = (element) => {
+    return new Promise((resolve) => {    
+      setTimeout(() => {
+        if (element.scrollTop + element.clientHeight === element.scrollHeight) {
+          console.log('Scrolled to bottom');
+          return resolve(true)
+        } else {
+          element.scrollTop = element.scrollHeight;
+          return scrollToBottom(element)
+        }
+        
+      }, 100);
+    })
+    
+  }
+  const search = (type?: SearchTypes) => {
+    sendToBackgroundViaRelay({
+      name: "search",
+      body: {
+        type: type ?? SearchTypes.StartSearch
+      },
+    }).then(() => {
+      const element = document.querySelector(`[aria-label*='Results for']`)  
+      setTimeout(async () => {
+        if (element) {
+
+          const res = await scrollToBottom(element)
+          
+          search(SearchTypes.SearchNextPage)
+          
+        }
+      }, 500);
+    })
+  }
   const handleSearch = () => {
     const input = document.querySelector<HTMLInputElement>("#searchbox input")
     console.log(input.value)
@@ -16,13 +50,8 @@ export const Search = () => {
     const searchButton = document.querySelector<HTMLButtonElement>("#searchbox-searchbutton")
     console.log(searchButton, 'searchButton')
     searchButton?.click()
-
-    sendToBackgroundViaRelay({
-      name: "search",
-      body: {
-        type: SearchTypes.StartSearch
-      },
-  }).then(console.log)
+    search()
+    
   }
   return (
     <div className="plasmo-text-center w-full">

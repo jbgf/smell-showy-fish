@@ -17,6 +17,7 @@ import { featuredImage } from "./const/featured-image";
 import { openingHours } from "./const/opening-hours";
 import { sendToBackground, sendToBackgroundViaRelay } from "@plasmohq/messaging"
 import { SearchTypes } from "~const/enum";
+import { relay } from "@plasmohq/messaging/relay";
 /**
  * 解析谷歌搜索接口返回数据
  */
@@ -163,23 +164,26 @@ export const config: PlasmoCSConfig = {
                       console.log(responseHeaders);
                       console.log(JSON.parse(arr));        */                 
                       if (this._url.indexOf('search') > -1) {
-
-                        
-
                         //   console.log('this._url', this._url, )
                         //   console.log(/* 'response', data,  */'this._url parsed:', parseData((data)));
                         const parsedData = parseData(data)
 
-                        /* sendToBackground({
-                            name: "search",
-                            body: {id: 1},
-                            extensionId: 'dgcjpmoibjkdancepkbgkmehgoohnmkc'
-                        }).then(console.log) */
+                       
                         sendToBackgroundViaRelay({
                             name: "search",
                             body: {type: SearchTypes.OnRes, data: parsedData}
                             ,
-                        }).then(console.log)
+                        })
+                        /* relay(
+                            {
+                                name: "search" as const,
+                                // 'body': {type: SearchTypes.StartSearch, data: parsedData}
+                            },
+                            async (req) => {
+                                const openResult = await sendToBackground(req)
+                                return openResult
+                            }
+                        ) */
                     }
                   } catch(err) {
                       console.log("Error in responseType try catch");
