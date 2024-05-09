@@ -1,22 +1,30 @@
-import { SearchOutlined } from "@ant-design/icons"
+import { CaretRightOutlined, CoffeeOutlined, DownloadOutlined, LoadingOutlined, PauseOutlined, SearchOutlined } from "@ant-design/icons"
+import cn from 'classnames'
 import { sendToBackgroundViaRelay } from "@plasmohq/messaging"
-import { Button } from "antd"
+import { Button, Flex, Space } from "antd"
 import { useEffect, useReducer, useRef, useState } from "react"
 import { SearchTypes } from "~const/enum"
 
 export const Search = () => {
-  /** mock data */
-  const [isSearching, setIsSearching] = useState(true)
+  const [isSearching, setIsSearching] = useState(false)
+  const [paused, setIsPaused] = useState(false)
   const isSearchingRef = useRef(isSearching);
+  const isPausedRef = useRef(paused);
+  const [data, setData] = useState([])
 
   useEffect(() => {
     isSearchingRef.current = isSearching;
   }, [isSearching]);
+
+  useEffect(() => {
+    isPausedRef.current = paused;
+  }, [paused]);
+
   const scrollToBottom = (element) => {
 
     return new Promise((resolve) => {    
       setTimeout(() => {
-        if (!isSearchingRef.current) {
+        if (isPausedRef.current) {
           return resolve(false);
         }
         if (element.scrollTop + element.clientHeight === element.scrollHeight) {
@@ -38,9 +46,14 @@ export const Search = () => {
       body: {
         type: type ?? SearchTypes.StartSearch
       },
-    }).then(() => {
-      const element = document.querySelector(`[aria-label*='Results for']`)  
-      setTimeout(async () => {
+    }).then((res) => {
+      setData(res?.data)
+      searchNext()
+    })
+  }
+  const searchNext = () => {
+    const element = document.querySelector(`[aria-label*='Results for']`)  
+    setTimeout(async () => {
         if (element) {
 
           const res = await scrollToBottom(element)
@@ -48,8 +61,7 @@ export const Search = () => {
           search(SearchTypes.SearchNextPage)
           
         }
-      }, 500);
-    })
+    }, 500);
   }
   const handleSearch = () => {
     const input = document.querySelector<HTMLInputElement>("#searchbox input")
@@ -66,15 +78,48 @@ export const Search = () => {
     search()
     
   }
+  const pauseSearch = () => {
+    setIsPaused(true)
+  }
+  const continueSearch = () => {
+    setIsPaused(false)
+    searchNext()
+  }
   return (
     <div className="plasmo-text-center w-full">
       {isSearching 
-      ? <div onClick={handleSearch} className="plasmo-w-full plasmo-border plasmo-border-light-900 plasmo-cursor-pointer plasmo-p-2 plasmo-text-3 plasmo-text-gray-600 plasmo-rounded">
-          <SearchOutlined />
-          Finding leads...
+      ? <div className="plasmo-w-full  plasmo-p-2 plasmo-text-sm ">
+          <div className="plasmo-flex plasmo-gap-x-3 plasmo-justify-center plasmo-items-center plasmo-mb-2 plasmo-text-xs">
+            {paused ? <CoffeeOutlined className="plasmo-text-red-500"  />: <LoadingOutlined className="plasmo-text-red-500" />}
+            {paused 
+              ? <div>
+                  In the pause <span className="plasmo-text-red-500">{data?.length}</span> leads were found.
+                </div>
+              : <div>
+                  Finding <span className="plasmo-text-red-500">{data?.length}</span> leads...
+                </div>
+            }
+            {
+              paused
+              ? <div onClick={continueSearch} className={"plasmo-outline plasmo-outline-offset-2 plasmo-outline-blue-500 plasmo-border plasmo-border-light-900 plasmo-cursor-pointer plasmo-p-1  plasmo-text-gray-600 plasmo-rounded"}>
+                  <CaretRightOutlined /> CONTINUE
+                </div>
+              : <div onClick={pauseSearch} className={" plasmo-border plasmo-border-light-900 plasmo-cursor-pointer plasmo-p-1  plasmo-text-gray-600 plasmo-rounded"}>
+                  <PauseOutlined /> pause
+                </div>
+            }
+           
+          </div>
+          <div className="plasmo-w-full plasmo-flex plasmo-justify-center plasmo-gap-x-3 plasmo-border plasmo-border-light-900 plasmo-cursor-pointer plasmo-p-2 plasmo-text-sm plasmo-text-gray-600 plasmo-rounded plasmo-items-center">
+            <DownloadOutlined />
+            <div>Export <span>{data?.length}</span> Leads to CSV</div>
+            
+          </div>
           
         </div>  
-      : <div onClick={handleSearch} className="plasmo-w-full plasmo-border plasmo-border-light-900 plasmo-cursor-pointer plasmo-p-2 plasmo-text-3 plasmo-text-gray-600 plasmo-rounded"><SearchOutlined /> Start Finding Leads</div>}
+      : <div onClick={handleSearch} className="plasmo-w-full plasmo-border plasmo-border-light-900 plasmo-cursor-pointer plasmo-p-1 plasmo-text-sm plasmo-text-gray-600 plasmo-rounded">
+        <SearchOutlined /> Start Finding Leads
+      </div>}
       <div className="plasmo-text-[10px] plasmo-text-gray-400 plasmo-pt-3">Powered by leads</div>
     </div>
   )

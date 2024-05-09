@@ -12,9 +12,9 @@ function waitForOnRes(): Promise<any> {
       reject(new Error('Timeout after 30 seconds'));
     }, 30000); // 30 seconds
 
-    emitter.once('SearchTypes.OnRes', (data) => {
+    emitter.once('SearchTypes.OnRes', () => {
       clearTimeout(timeout);
-      resolve(data);
+      resolve(storedData);
     });
   });
 }
@@ -28,21 +28,22 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
   if (data.type === SearchTypes.StartSearch) {
     storedData = []
     const data = await waitForOnRes();
-    res?.send({message: 'search finished'})
+    res?.send({message: 'search finished', data: storedData})
     return;
   }
   if (data.type === SearchTypes.SearchNextPage) {
     const data = await waitForOnRes();
-    res?.send({message: 'search next page finished'})
+    res?.send({message: 'search next page finished', data: storedData})
     return;
   }
   if (data.type === SearchTypes.OnRes) {
     storedData.push(...(data.data || []))
-    emitter.emit('SearchTypes.OnRes');
+    emitter.emit('SearchTypes.OnRes', );
+    res.send({
+      message: 'search ressponse',
+      data: storedData
+    })
   }
-  res.send({
-    message: storedData,
-  })
 }
  
 export default handler
