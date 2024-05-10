@@ -31,6 +31,11 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
     res?.send({message: 'search finished', data: storedData})
     return;
   }
+  if (data.type === SearchTypes.Reset) {
+    storedData = []
+    res?.send({message: 'search reset', data: storedData})
+    return;
+  }
   if (data.type === SearchTypes.SearchNextPage) {
     const data = await waitForOnRes();
     res?.send({message: 'search next page finished', data: storedData})
