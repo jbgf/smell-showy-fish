@@ -5,7 +5,10 @@ import { Button, Flex, Space } from "antd"
 import { useEffect, useReducer, useRef, useState } from "react"
 import { SearchTypes } from "~const/enum"
 import { ButtonFull } from "./button-full"
-
+import { ReqRangeKey } from "~const/local"
+import { Storage } from "@plasmohq/storage"
+ 
+export const searchStorage = new Storage()
 export const Search = () => {
 
   const [isSearching, setIsSearching] = useState<boolean>()
@@ -15,10 +18,22 @@ export const Search = () => {
   const isSearchingRef = useRef(isSearching);
   const isPausedRef = useRef(paused);
   const [data, setData] = useState([])
+  const initReqConfig = async () => {
+    // await storage.set("key", "value")
+    const data = await searchStorage.get(ReqRangeKey)
+
+  }
+
+
   /** mock data */
   const min = 5;
   const max = 15
   const random = Math.random() * (max - min) + min;
+
+  useEffect(() => {
+    initReqConfig()
+  }, [])
+
   useEffect(() => {
     isSearchingRef.current = isSearching;
   }, [isSearching]);

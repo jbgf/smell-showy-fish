@@ -1,9 +1,11 @@
-import { CountButton } from "~features/count-button"
+
 import Logo from './images/logo.png';
 import "~style.css"
 import { Button, Flex, Slider, Tabs, Tag, type SliderSingleProps } from "antd";
 import { CheckCircleFilled, HomeFilled, SettingFilled } from "@ant-design/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { searchStorage } from '~features/search';
+import { ReqRangeKey } from '~const/local';
 
 const steps = new Array(6).fill(0).map((_, i) => i + 5);
 const marks: SliderSingleProps['marks'] = steps.reduce((acc, cur) => Object.assign(acc, {[cur]: `${cur}S`}), {});
@@ -39,6 +41,23 @@ function IndexPopup() {
     chrome.tabs.create({ url: 'https://www.google.com/maps' }, function(tab) {
     });
   }
+  const [values, setValues] = useState([steps[0], steps[steps?.length - 1]]);
+  
+  const initReqConfig = async () => {
+    // await storage.set("key", "value")
+    const data = await searchStorage.get<number[]>(ReqRangeKey)
+    if (data) setValues(data)
+    
+  }
+  
+  useEffect(() => {
+    initReqConfig()
+  }, [])
+
+  const onChangeComplete = (values: number[]) => {
+    setValues(values)
+  }
+
   return (
     <div style={{width: 440}}>
       <Flex className="plasmo-h-16 plasmo-pl-4" align="center">
@@ -58,7 +77,7 @@ function IndexPopup() {
             key: 'settings',
             children: <div className="plasmo-pl-4 plasmo-pr-4">
               1. Random Interval between the requests for data (seconds)
-            <Slider marks={marks} defaultValue={steps[0]} min={steps[0]} max={steps[steps?.length - 1]} />
+            <Slider range  marks={marks} onChangeComplete={onChangeComplete} defaultValue={values} value={values} min={steps[0]} max={steps[steps?.length - 1]} />
               2. Fields to export.
               <Flex wrap="wrap" gap={0}>
                 {fields.map((field, index) => {
