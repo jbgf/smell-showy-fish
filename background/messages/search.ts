@@ -3,9 +3,10 @@ import type { PlasmoMessaging } from "@plasmohq/messaging"
 import { message } from "antd";
 import { SearchTypes } from "~const/enum"
 import { EventEmitter } from 'events';
+import { Storage } from "@plasmohq/storage"
+
 const emitter = new EventEmitter();
 let storedData = [];
-
 function waitForOnRes(): Promise<any> {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -22,6 +23,9 @@ function waitForOnRes(): Promise<any> {
 
 
 const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
+  const storage = new Storage()
+
+
   const data = req.body
   console.log(`data search`, data)
 
@@ -39,6 +43,17 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
   if (data.type === SearchTypes.SearchNextPage) {
     const data = await waitForOnRes();
     res?.send({message: 'search next page finished', data: storedData})
+    return;
+  }
+  if (data.type === SearchTypes.StoreReqConfig) {
+    
+    storage.set('requestConfig', data?.data)
+    res?.send({message: 'search config stored'})
+    return;
+  }
+  if (data.type === SearchTypes.GetConfig) {
+    const config = await storage.get('requestConfig')
+    res?.send({message: 'search config result', data: config})
     return;
   }
   if (data.type === SearchTypes.OnRes) {

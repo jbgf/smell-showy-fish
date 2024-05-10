@@ -174,16 +174,6 @@ export const config: PlasmoCSConfig = {
                             body: {type: SearchTypes.OnRes, data: parsedData}
                             ,
                         })
-                        /* relay(
-                            {
-                                name: "search" as const,
-                                // 'body': {type: SearchTypes.StartSearch, data: parsedData}
-                            },
-                            async (req) => {
-                                const openResult = await sendToBackground(req)
-                                return openResult
-                            }
-                        ) */
                     }
                   } catch(err) {
                       console.log("Error in responseType try catch");

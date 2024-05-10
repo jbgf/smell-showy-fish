@@ -2,5 +2,7 @@ export enum SearchTypes {
   StartSearch,
   SearchNextPage,
   OnRes,
-  Reset
+  Reset,
+  StoreReqConfig,
+  GetConfig
 }

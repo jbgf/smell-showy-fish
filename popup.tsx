@@ -1,11 +1,17 @@
 
 import Logo from './images/logo.png';
 import "~style.css"
+import { Storage } from "@plasmohq/storage"
+
 import { Button, Flex, Slider, Tabs, Tag, type SliderSingleProps } from "antd";
 import { CheckCircleFilled, HomeFilled, SettingFilled } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { searchStorage } from '~features/search';
+
 import { ReqRangeKey } from '~const/local';
+import { sendToBackground, sendToBackgroundViaRelay, sendToContentScript } from '@plasmohq/messaging';
+import { SearchTypes } from '~const/enum';
+
+const searchStorage = new Storage()
 
 const steps = new Array(6).fill(0).map((_, i) => i + 5);
 const marks: SliderSingleProps['marks'] = steps.reduce((acc, cur) => Object.assign(acc, {[cur]: `${cur}S`}), {});
@@ -46,7 +52,19 @@ function IndexPopup() {
   const initReqConfig = async () => {
     // await storage.set("key", "value")
     const data = await searchStorage.get<number[]>(ReqRangeKey)
-    if (data) setValues(data)
+
+    if (data) {
+      setValues(data)
+      sendToBackground({
+        name: "search",
+        body: {
+          type: SearchTypes.StoreReqConfig,
+          data
+        },
+      }).then((res) => {
+        console.log(res)
+      })
+    }
     
   }
   
@@ -54,10 +72,21 @@ function IndexPopup() {
     initReqConfig()
   }, [])
 
-  const onChangeComplete = (values: number[]) => {
+  const onChange = (values: number[]) => {
     setValues(values)
   }
-
+  const onChangeComplete = async (values: number[]) => {
+    await searchStorage.set(ReqRangeKey, values)
+    sendToBackground({
+      name: "search",
+      body: {
+        type: SearchTypes.StoreReqConfig,
+        data: values
+      },
+    }).then((res) => {
+      console.log(res)
+    })
+  }
   return (
     <div style={{width: 440}}>
       <Flex className="plasmo-h-16 plasmo-pl-4" align="center">
@@ -77,7 +106,7 @@ function IndexPopup() {
             key: 'settings',
             children: <div className="plasmo-pl-4 plasmo-pr-4">
               1. Random Interval between the requests for data (seconds)
-            <Slider range  marks={marks} onChangeComplete={onChangeComplete} defaultValue={values} value={values} min={steps[0]} max={steps[steps?.length - 1]} />
+            <Slider range  marks={marks} onChange={onChange} onChangeComplete={onChangeComplete} defaultValue={values} value={values} min={steps[0]} max={steps[steps?.length - 1]} />
               2. Fields to export.
               <Flex wrap="wrap" gap={0}>
                 {fields.map((field, index) => {
