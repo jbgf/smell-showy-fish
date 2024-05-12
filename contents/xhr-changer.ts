@@ -18,6 +18,7 @@ import { openingHours } from "./const/opening-hours";
 import { sendToBackground, sendToBackgroundViaRelay } from "@plasmohq/messaging"
 import { SearchTypes } from "~const/enum";
 import { relay } from "@plasmohq/messaging/relay";
+import { fields } from "~const/fields";
 /**
  * 解析谷歌搜索接口返回数据
  */
@@ -31,70 +32,7 @@ function parseData (rawData: {d: string}) {
     const searchBody = newData.d?.replace(`)]}'\n`, '');
     
     // console.log(`searchBody`, searchBody, )
-    return collectData(JSON.parse(searchBody), [
-        {
-            label: `Name`,
-            path: name,
-        },
-        {
-            label: `Feature`,
-            path: feature,
-        
-        },
-        {
-            label: `Full Address`,
-            path: FullAddress
-        },
-        {
-            label: `Street`,
-            path: street
-        },
-        {
-            label: `Municipality`,
-            path: municipality
-        },
-        {
-            label: `Categories`,
-            path: categories
-        },
-        {
-            label: `Phone`,
-            path: phone
-        },
-        {
-            label: `Review Count`,
-            path: reviewCount
-        },
-        {
-            label: `Average Rating`,
-            path: averageRating
-        },
-        {
-            label: `Review URL`,
-            path: reviewURL
-        },
-        {
-            label: `Latitude`,
-            path: latitude
-        },
-        {
-            label: `Longitude`,
-            path: longitude
-        },
-        {
-            label: `Website`,
-            path: website
-        },
-        {
-            label: `Featured Image`,
-            path: featuredImage,
-        },
-        {
-            label: `Opening Hours`,
-            path: openingHours,
-            formatArray: (arr) => arr?.map((item) => `${item?.[0]}: ${item?.[1]?.toString()}`)?.join(',')
-        },
-    ]);
+    return collectData(JSON.parse(searchBody), fields);
 }
 
 

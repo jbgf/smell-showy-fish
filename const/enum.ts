@@ -4,5 +4,6 @@ export enum SearchTypes {
   OnRes,
   Reset,
   StoreReqConfig,
+  StoreExportFields,
   GetConfig
 }

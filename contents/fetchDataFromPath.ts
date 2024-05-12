@@ -38,13 +38,26 @@ export function collectData(data: MultiDimensionalArray, paths: {label: string, 
   const firstKey = Object.keys(obj)[0];
   const firstRow = obj[firstKey];
   const arr = []
-  firstRow?.forEach((item, index) => {
+
+  console.log(`keys`, keys, `firstRow`, firstRow, `obj`, obj)
+
+  /* firstRow?.forEach((item, index) => {
     if (item === null) return;
     const row = keys?.reduce((record, key) => {
       record[key] = obj[key][index];
       return record;
     }, {})
     arr.push(row);
+  }) */
+  keys?.forEach((key) => {
+    const values = obj[key];
+    // 第一项都是null
+    values?.slice(1)?.forEach((value, index) => {
+      if (!arr[index]) {
+        arr[index] = {}
+      }
+      arr[index][key] = value;
+    })
   })
   // console.log(obj)
   return arr;

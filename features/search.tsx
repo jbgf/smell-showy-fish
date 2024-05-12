@@ -5,9 +5,13 @@ import { Button, Flex, Space } from "antd"
 import { useEffect, useReducer, useRef, useState } from "react"
 import { SearchTypes } from "~const/enum"
 import { ButtonFull } from "./button-full"
+import { StorageKeys } from "~const"
+import { fields } from "~const/fields"
+import dayjs from "dayjs"
+import exportExcel from "~/utils/exportExcel"
  
 export const Search = () => {
-
+  const [searchValue, setSearchValue] = useState<string>()
   const [isSearching, setIsSearching] = useState<boolean>()
   const searchEnded = isSearching === false;
 
@@ -23,19 +27,20 @@ export const Search = () => {
   const max = intervalRange?.[1]
   const random = (Math.random() * (max - min) + min) || 5;
 
-  const initReqConfig = async () => {
-    sendToBackgroundViaRelay({
+  const initReqConfig = async (): Promise<{requestConfig: Search.RequestConfig['intervalRange'], exportFields: string[]}> => {
+    return sendToBackgroundViaRelay({
       name: "search",
       body: {
         type: SearchTypes.GetConfig
       },
     }).then((res) => {
-      setIntervalRange(res?.data)
+      const data = res?.data;
+      setIntervalRange(data?.[StorageKeys.requestConfig])
+      return data;
     })
     
   }
-  useEffect(() => {
-  }, [])
+  
 
   useEffect(() => {
     isSearchingRef.current = isSearching;
@@ -44,6 +49,7 @@ export const Search = () => {
   useEffect(() => {
     isPausedRef.current = paused;
   }, [paused]);
+
   let scrollTopPrev = 0;
   let scrollHeightPrev = 0;
   const getResult = () => {
@@ -64,7 +70,8 @@ export const Search = () => {
           return resolve(false);
         }
         // console.log('element.scrollTop', element.scrollTop, 'clientHeight', element.clientHeight, 'scrollHeight', element.scrollHeight)
-        if (scrollTopPrev === element.scrollTop && scrollHeightPrev === element.scrollHeight) {
+        const lastDivNoAlink = element.querySelector('div:last-child:not(:has(a))');
+        if ((scrollTopPrev === element.scrollTop && scrollHeightPrev === element.scrollHeight)/*  || lastDivNoAlink */) {
           console.log('Scrolled to bottom');
           setIsSearching(false)
           return resolve(true)
@@ -111,6 +118,7 @@ export const Search = () => {
     const input = document.querySelector<HTMLInputElement>("#searchbox input")
     // console.log(input.value)
     const value = input.value;
+    setSearchValue(value)
     if (!value) {
       alert(`Please enter an address or name of a place.`)
       return;
@@ -146,8 +154,42 @@ export const Search = () => {
       setIsPaused(false)
     })
   }
+
+  const exportData = async () => {
+    const res = await initReqConfig()
+    const storedFields = res?.exportFields;
+    console.log('fields', storedFields, `data`, data)
+    const exportFields = storedFields || fields?.map(item => item?.label);
+    // exportFields
+    const sheetName = `${searchValue}_${dayjs().format('YYYY-MM-DD')}`
+    const firstRow = data?.[0];
+    if (!firstRow) return;
+    const sheetHeader = Object.keys(firstRow).filter((key) => exportFields?.includes(key));
+    const sheetData = data?.map(row => {
+      return sheetHeader.reduce((obj, key) => ({
+        ...obj,
+        [key]: row[key]
+      }), {})
+    });
+
+    console.log(`sheetHeader`, sheetHeader, `sheetData`, sheetData, )
+
+    const option = {
+      fileName: sheetName,
+      datas: [
+        {
+          sheetData,
+          sheetName,
+          sheetHeader,
+        },
+      ],
+    };
+    
+    exportExcel(option).saveExcel();
+  }
+
   const EXPORT_BTN = (
-    <ButtonFull disabled={!searchEnded}>
+    <ButtonFull onClick={exportData} disabled={!searchEnded}>
       <DownloadOutlined />
       <div>Export <span>{data?.length}</span> Leads to CSV</div>
     </ButtonFull>

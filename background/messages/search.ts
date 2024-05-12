@@ -4,6 +4,7 @@ import { message } from "antd";
 import { SearchTypes } from "~const/enum"
 import { EventEmitter } from 'events';
 import { Storage } from "@plasmohq/storage"
+import { StorageKeys } from "~const";
 
 const emitter = new EventEmitter();
 let storedData = [];
@@ -47,13 +48,23 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
   }
   if (data.type === SearchTypes.StoreReqConfig) {
     
-    storage.set('requestConfig', data?.data)
+    storage.set(StorageKeys.requestConfig, data?.data)
     res?.send({message: 'search config stored'})
     return;
   }
+  if (data.type === SearchTypes.StoreExportFields) {
+    
+    storage.set(StorageKeys.exportFields, data?.data)
+    res?.send({message: 'search export fields stored'})
+    return;
+  }
   if (data.type === SearchTypes.GetConfig) {
-    const config = await storage.get('requestConfig')
-    res?.send({message: 'search config result', data: config})
+    const config = await storage.get(StorageKeys.requestConfig)
+    const fields = await storage.get(StorageKeys.exportFields)
+    res?.send({message: 'search config result', data: {
+      [StorageKeys.requestConfig]: config,
+      [StorageKeys.exportFields]: fields
+    }})
     return;
   }
   if (data.type === SearchTypes.OnRes) {

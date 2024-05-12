@@ -7,42 +7,31 @@ import { Button, Flex, Slider, Tabs, Tag, type SliderSingleProps } from "antd";
 import { CheckCircleFilled, HomeFilled, SettingFilled } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 
-import { ReqRangeKey } from '~const/local';
+import { FieldsKey, ReqRangeKey } from '~const/local';
 import { sendToBackground, sendToBackgroundViaRelay, sendToContentScript } from '@plasmohq/messaging';
 import { SearchTypes } from '~const/enum';
-
+import {fields as fieldsData} from '~const/fields';
 const searchStorage = new Storage()
 
 const steps = new Array(6).fill(0).map((_, i) => i + 5);
 const marks: SliderSingleProps['marks'] = steps.reduce((acc, cur) => Object.assign(acc, {[cur]: `${cur}S`}), {});
-const fields = [
-  "Name",
-  "Feature",
-  "Full Address",
-  "Street",
-  "Municipality",
-  "Categories",
-  "Phones",
-  "Review Count",
-  "Average Rating",
-  "Review URL",
-  "Google Maps URL",
-  "Cid",
-  "Latitude",
-  "Longitude",
-  "Website",
-  "Domain",
-  "Opening Hours",
-  "Featured Image",
-  "Place Id",
-  "Emails",
-  "Plus Code",
-  "Google Knowledge URL",
-  "Kgmid"
-];
+const fields = fieldsData.map(item => item.label);
 function IndexPopup() {
   const [arr, setArr] = useState([...fields]);
-  const toggle = (field) => setArr(arr.includes(field) ? arr.filter(f => f !== field) : [...arr, field]);
+  const toggle = (field) => {
+    const newArr = arr.includes(field) ? arr.filter(f => f !== field) : [...arr, field]
+    setArr(newArr);
+    searchStorage.set(FieldsKey, newArr)
+    sendToBackground({
+      name: "search",
+      body: {
+        type: SearchTypes.StoreExportFields,
+        data: newArr
+      },
+    }).then((res) => {
+      console.log(res)
+    })
+  }
   const openGMap = () => {
     chrome.tabs.create({ url: 'https://www.google.com/maps' }, function(tab) {
     });
@@ -50,20 +39,14 @@ function IndexPopup() {
   const [values, setValues] = useState([steps[0], steps[steps?.length - 1]]);
   
   const initReqConfig = async () => {
-    // await storage.set("key", "value")
+    const localFields = await searchStorage.get<string[]>(FieldsKey)
+    if (localFields) {
+      setArr(localFields)
+    }
     const data = await searchStorage.get<number[]>(ReqRangeKey)
 
     if (data) {
       setValues(data)
-      sendToBackground({
-        name: "search",
-        body: {
-          type: SearchTypes.StoreReqConfig,
-          data
-        },
-      }).then((res) => {
-        console.log(res)
-      })
     }
     
   }
@@ -106,9 +89,9 @@ function IndexPopup() {
             key: 'settings',
             children: <div className="plasmo-pl-4 plasmo-pr-4">
               1. Random Interval between the requests for data (seconds)
-            <Slider range  marks={marks} onChange={onChange} onChangeComplete={onChangeComplete} defaultValue={values} value={values} min={steps[0]} max={steps[steps?.length - 1]} />
+              <Slider range  marks={marks} onChange={onChange} onChangeComplete={onChangeComplete} defaultValue={values} value={values} min={steps[0]} max={steps[steps?.length - 1]} />
               2. Fields to export.
-              <Flex wrap="wrap" gap={0}>
+              <Flex wrap="wrap" gap={0} className='plasmo-mt-2'>
                 {fields.map((field, index) => {
                   const isActive = arr.includes(field);
                   return (
