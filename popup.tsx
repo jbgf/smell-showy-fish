@@ -2,7 +2,6 @@
 import Logo from './images/logo.png';
 import "~style.css"
 import { Storage } from "@plasmohq/storage"
-
 import { Button, Flex, Slider, Tabs, Tag, type SliderSingleProps } from "antd";
 import { CheckCircleFilled, HomeFilled, SettingFilled } from "@ant-design/icons";
 import { useEffect, useState } from "react";
@@ -11,6 +10,9 @@ import { FieldsKey, ReqRangeKey } from '~const/local';
 import { sendToBackground, sendToBackgroundViaRelay, sendToContentScript } from '@plasmohq/messaging';
 import { SearchTypes } from '~const/enum';
 import {fields as fieldsData} from '~const/fields';
+
+import "https://www.googletagmanager.com/gtag/js?id=$PLASMO_PUBLIC_GTAG_ID"
+
 const searchStorage = new Storage()
 
 const steps = new Array(6).fill(0).map((_, i) => i + 5);
@@ -53,6 +55,21 @@ function IndexPopup() {
   
   useEffect(() => {
     initReqConfig()
+  }, [])
+  useEffect(() => {
+    window.dataLayer = window.dataLayer || []
+    window.gtag = function gtag() {
+      window.dataLayer.push(arguments) // eslint-disable-line
+    }
+    window.gtag("js", new Date())
+    window.gtag("config", process.env.PLASMO_PUBLIC_GTAG_ID, {
+      page_path: "/popup",
+      debug_mode: true
+    })
+ 
+    window.gtag("event", "login", {
+      method: "TEST"
+    })
   }, [])
 
   const onChange = (values: number[]) => {
