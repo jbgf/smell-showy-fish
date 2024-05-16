@@ -104,13 +104,18 @@ export const Search = () => {
       searchNext()
     })
   }
-  const searchNext = () => {
+  const searchNext = (count = 0) => {
+    // 若未出现结果列表需要重新搜索，尝试5次
+    if (count > 5) return;
     const element = document.querySelector(`[aria-label*='Results for']`)  
     setTimeout(async () => {
+        console.log('searchNext-element', element)
         if (element) {
 
           const res = await scrollToBottom(element)
           getResult()
+        } else {
+          searchNext((count) + 1)
         }
     }, 500);
   }
@@ -129,8 +134,11 @@ export const Search = () => {
     const searchButton = document.querySelector<HTMLButtonElement>("#searchbox-searchbutton")
     // console.log(searchButton, 'searchButton')
     searchButton?.click()
+    // 用户可能未点击搜索按钮直接采集，没有搜索结果列表
     const element = document.querySelector(`[aria-label*='Results for']`)  
-    element.scrollTop = 0;
+    if (!!element) {
+      element.scrollTop = 0;
+    };
     setIsSearching(true)
     search()
     
@@ -172,7 +180,7 @@ export const Search = () => {
       }), {})
     });
 
-    console.log(`sheetHeader`, sheetHeader, `sheetData`, sheetData, )
+    // console.log(`sheetHeader`, sheetHeader, `sheetData`, sheetData, )
 
     const option = {
       fileName: sheetName,
